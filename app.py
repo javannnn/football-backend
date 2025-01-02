@@ -1,11 +1,16 @@
 import psycopg2
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import Flask-CORS
 
 app = Flask(__name__)
 
+# Enable CORS for all routes
+CORS(app)  # Allow all origins by default
+
 DATABASE_URL = os.getenv("SUPABASE_URL")
 
+# Database connection setup
 try:
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
@@ -21,6 +26,7 @@ def index():
 def book():
     data = request.json
     try:
+        # Insert booking into the database
         cursor.execute(
             "INSERT INTO bookings (name, spots, status) VALUES (%s, %s, %s)",
             (data['name'], data['spots'], 'Pending'),
