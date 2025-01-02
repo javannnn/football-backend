@@ -4,23 +4,27 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("SUPABASE_URL")
 
 try:
-    # Explicitly specify the host for TCP/IP connection
-    conn = psycopg2.connect(DATABASE_URL, host='db.muhkjvufppfapjkoupgc.supabase.co')
+    conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
-    print("Connection successful!")
-except psycopg2.Error as e:
-    print(f"Connection failed: {e}")
+except Exception as e:
+    print(f"Database connection failed: {e}")
+    exit()
 
 @app.route('/book', methods=['POST'])
 def book():
     data = request.json
-    cursor.execute("INSERT INTO bookings (name, spots, status) VALUES (%s, %s, %s)",
-                   (data['name'], data['spots'], 'Pending'))
-    conn.commit()
-    return jsonify({"message": "Booking received!"})
+    try:
+        cursor.execute(
+            "INSERT INTO bookings (name, spots, status) VALUES (%s, %s, %s)",
+            (data['name'], data['spots'], 'Pending'),
+        )
+        conn.commit()
+        return jsonify({"message": "Booking received!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
