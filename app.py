@@ -51,6 +51,11 @@ private_key = serialization.load_pem_private_key(
     password=None,
 )
 
+@app.route('/')
+def home():
+    return "Football backend is running!"
+
+
 @app.route('/applicants', methods=['GET'])
 def get_applicants():
     applicants = [
