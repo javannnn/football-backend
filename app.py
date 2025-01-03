@@ -21,13 +21,16 @@ TELEBIRR_APP_SECRET = os.getenv("TELEBIRR_APP_SECRET")
 PRIVATE_KEY = os.getenv("TELEBIRR_PRIVATE_KEY")
 
 # Telebirr endpoints
-INITIATE_PAYMENT_URL = "https://openapi.ethiotelecom.et/paymentService/open-payment"  # Replace with actual Telebirr endpoint
+INITIATE_PAYMENT_URL = "https://openapi.ethiotelecom.et/paymentService/open-payment"
 
 # Load private key
-private_key = serialization.load_pem_private_key(
-    PRIVATE_KEY.encode(),
-    password=None,
-)
+try:
+    private_key = serialization.load_pem_private_key(
+        PRIVATE_KEY.encode(),
+        password=None,
+    )
+except Exception as e:
+    raise RuntimeError(f"Failed to load private key: {e}")
 
 @app.route('/book', methods=['POST'])
 def initiate_payment():
@@ -72,18 +75,18 @@ def initiate_payment():
         response = requests.post(INITIATE_PAYMENT_URL, json=payload, headers=headers)
         response_data = response.json()
 
-        if response_data.get("code") == "200":
+        if response.status_code == 200 and response_data.get("code") == "200":
             return jsonify({"message": "Payment initiated successfully", "data": response_data})
         else:
-            return jsonify({"error": response_data.get("message", "Payment initiation failed")}), 400
+            error_message = response_data.get("message", "Payment initiation failed")
+            return jsonify({"error": error_message}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/telebirr-callback', methods=['POST'])
 def handle_payment_callback():
-    # Process callback data from Telebirr to confirm payment status
     callback_data = request.json
-    # Validate and process the callback (e.g., mark booking as paid)
+    # Validate callback signature and update booking status here
     return jsonify({"message": "Callback received", "data": callback_data})
 
 if __name__ == '__main__':
