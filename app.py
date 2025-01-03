@@ -12,6 +12,7 @@ AMOUNT_PER_SLOT = 800
 
 # Applicants data
 applicants = []
+applicant_id_counter = 1  # Counter to generate unique IDs for applicants
 
 @app.route('/')
 def home():
@@ -25,6 +26,8 @@ def get_applicants():
 @app.route('/book', methods=['POST'])
 def book_slot():
     """Book a slot and calculate the payment."""
+    global applicant_id_counter
+
     data = request.json
     user_name = data.get("name")
     slots = data.get("slots")
@@ -37,8 +40,14 @@ def book_slot():
     total_amount = AMOUNT_PER_SLOT * slots
 
     # Save applicant data
-    applicant = {"name": user_name, "slots": slots, "status": "Pending"}
+    applicant = {
+        "id": applicant_id_counter,
+        "name": user_name,
+        "slots": slots,
+        "status": "Pending"
+    }
     applicants.append(applicant)
+    applicant_id_counter += 1
 
     return jsonify({
         "message": "Please make your payment to complete the booking.",
@@ -53,14 +62,14 @@ def book_slot():
 def update_status():
     """Update the status of an applicant."""
     data = request.json
-    user_name = data.get("name")
+    applicant_id = data.get("id")
     new_status = data.get("status")
 
-    if not user_name or not new_status:
-        return jsonify({"error": "Name and status are required"}), 400
+    if not applicant_id or not new_status:
+        return jsonify({"error": "Applicant ID and status are required"}), 400
 
     for applicant in applicants:
-        if applicant["name"] == user_name:
+        if applicant["id"] == applicant_id:
             applicant["status"] = new_status
             return jsonify({"message": "Status updated successfully"}), 200
 
