@@ -11,7 +11,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Telebirr credentials
 TELEBIRR_MERCHANT_APP_ID = "1346688522803207"
@@ -44,11 +44,22 @@ pdLz1BbMj8xUHuYQkbxNeIPhH29CySn0vfhwg9VxAtIoOhvZeCfnsCRTj9OZjepCeUqDiDSoFzngl
 rKhfeKUndHjvg+9kiae92iI6qJudPCHMNwP8wMSphkxUqnXFR3lr9A765GA980818UWZdrhrjLKtI
 IZdh+X1
 -----END PRIVATE KEY-----"""
+
 # Load private key
 private_key = serialization.load_pem_private_key(
     PRIVATE_KEY.encode(),
     password=None,
 )
+
+# Applicants list route
+@app.route('/applicants', methods=['GET'])
+def get_applicants():
+    # Example static data, replace with DB query if needed
+    applicants = [
+        {"id": 1, "name": "John Doe", "spots": 2, "status": "Pending"},
+        {"id": 2, "name": "Jane Smith", "spots": 1, "status": "Paid"}
+    ]
+    return jsonify(applicants)
 
 @app.route('/book', methods=['POST'])
 def initiate_payment():
