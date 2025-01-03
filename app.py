@@ -9,11 +9,9 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 QR_CODE_URL = "https://football-backend-47ii.onrender.com/static/chat_qr_code.jpg"
 PHONE_NUMBER = "+251910187397"
 AMOUNT_PER_SLOT = 800
-TOTAL_SLOTS = 20
 
 # Applicants data
 applicants = []
-applicant_id_counter = 1  # Counter to generate unique IDs for applicants
 
 @app.route('/')
 def home():
@@ -21,39 +19,20 @@ def home():
 
 @app.route('/applicants', methods=['GET'])
 def get_applicants():
-    """Get the list of applicants."""
     return jsonify(applicants)
 
 @app.route('/book', methods=['POST'])
 def book_slot():
-    """Book a slot and calculate the payment."""
-    global applicant_id_counter
-
     data = request.json
     user_name = data.get("name")
     slots = data.get("slots")
 
-    # Validate input
     if not user_name or not slots or not isinstance(slots, int) or slots <= 0:
         return jsonify({"error": "Name and a valid number of slots are required"}), 400
 
-    # Check if there are enough slots available
-    booked_slots = sum([a["slots"] for a in applicants if a["status"] == "Confirmed"])
-    if booked_slots + slots > TOTAL_SLOTS:
-        return jsonify({"error": "Not enough slots available"}), 400
-
-    # Calculate total amount
     total_amount = AMOUNT_PER_SLOT * slots
-
-    # Save applicant data
-    applicant = {
-        "id": applicant_id_counter,
-        "name": user_name,
-        "slots": slots,
-        "status": "Pending"
-    }
+    applicant = {"id": len(applicants) + 1, "name": user_name, "slots": slots, "status": "Pending"}
     applicants.append(applicant)
-    applicant_id_counter += 1
 
     return jsonify({
         "message": "Please make your payment to complete the booking.",
@@ -64,36 +43,40 @@ def book_slot():
         }
     })
 
-@app.route('/update-status', methods=['POST'])
-def update_status():
-    """Update the status of an applicant."""
+@app.route('/update-applicant', methods=['POST'])
+def update_applicant():
     data = request.json
     applicant_id = data.get("id")
-    new_status = data.get("status")
+    updated_name = data.get("name")
+    updated_spots = data.get("spots")
+    updated_status = data.get("status")
 
-    if not applicant_id or not new_status:
-        return jsonify({"error": "Applicant ID and status are required"}), 400
+    if not applicant_id:
+        return jsonify({"error": "Applicant ID is required"}), 400
 
     for applicant in applicants:
         if applicant["id"] == applicant_id:
-            applicant["status"] = new_status
-            return jsonify({"message": "Status updated successfully"}), 200
+            if updated_name:
+                applicant["name"] = updated_name
+            if updated_spots:
+                applicant["slots"] = updated_spots
+            if updated_status:
+                applicant["status"] = updated_status
+            return jsonify({"message": "Applicant updated successfully"}), 200
 
     return jsonify({"error": "Applicant not found"}), 404
 
-@app.route('/admin-dashboard', methods=['GET'])
-def admin_dashboard():
-    """Admin dashboard to get booking stats."""
-    total_slots = TOTAL_SLOTS
-    confirmed_slots = sum([a["slots"] for a in applicants if a["status"] == "Confirmed"])
-    pending_slots = total_slots - confirmed_slots
+@app.route('/delete-applicant', methods=['POST'])
+def delete_applicant():
+    data = request.json
+    applicant_id = data.get("id")
 
-    return jsonify({
-        "total_slots": total_slots,
-        "confirmed_slots": confirmed_slots,
-        "pending_slots": pending_slots,
-        "applicants": applicants
-    })
+    if not applicant_id:
+        return jsonify({"error": "Applicant ID is required"}), 400
+
+    global applicants
+    applicants = [applicant for applicant in applicants if applicant["id"] != applicant_id]
+    return jsonify({"message": "Applicant deleted successfully"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
