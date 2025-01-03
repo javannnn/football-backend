@@ -9,6 +9,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 QR_CODE_URL = "https://football-backend-47ii.onrender.com/static/chat_qr_code.jpg"
 PHONE_NUMBER = "+251910187397"
 AMOUNT_PER_SLOT = 800
+TOTAL_SLOTS = 20
 
 # Applicants data
 applicants = []
@@ -35,6 +36,11 @@ def book_slot():
     # Validate input
     if not user_name or not slots or not isinstance(slots, int) or slots <= 0:
         return jsonify({"error": "Name and a valid number of slots are required"}), 400
+
+    # Check if there are enough slots available
+    booked_slots = sum([a["slots"] for a in applicants if a["status"] == "Confirmed"])
+    if booked_slots + slots > TOTAL_SLOTS:
+        return jsonify({"error": "Not enough slots available"}), 400
 
     # Calculate total amount
     total_amount = AMOUNT_PER_SLOT * slots
@@ -74,6 +80,20 @@ def update_status():
             return jsonify({"message": "Status updated successfully"}), 200
 
     return jsonify({"error": "Applicant not found"}), 404
+
+@app.route('/admin-dashboard', methods=['GET'])
+def admin_dashboard():
+    """Admin dashboard to get booking stats."""
+    total_slots = TOTAL_SLOTS
+    confirmed_slots = sum([a["slots"] for a in applicants if a["status"] == "Confirmed"])
+    pending_slots = total_slots - confirmed_slots
+
+    return jsonify({
+        "total_slots": total_slots,
+        "confirmed_slots": confirmed_slots,
+        "pending_slots": pending_slots,
+        "applicants": applicants
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
