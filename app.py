@@ -44,8 +44,6 @@ pdLz1BbMj8xUHuYQkbxNeIPhH29CySn0vfhwg9VxAtIoOhvZeCfnsCRTj9OZjepCeUqDiDSoFzngl
 rKhfeKUndHjvg+9kiae92iI6qJudPCHMNwP8wMSphkxUqnXFR3lr9A765GA980818UWZdrhrjLKtI
 IZdh+X1
 -----END PRIVATE KEY-----"""
-
-
 # Load private key
 private_key = serialization.load_pem_private_key(
     PRIVATE_KEY.encode(),
@@ -68,7 +66,7 @@ def initiate_payment():
             "outTradeNo": f"booking-{int(time.time())}",
             "subject": "Yerer Football Booking",
             "totalAmount": amount,
-            "notifyUrl": "https://your-backend-url/telebirr-notify",
+            "notifyUrl": "https://your-backend-url/telebirr-callback",
             "shortCode": TELEBIRR_SHORT_CODE,
             "timeoutExpress": "30m",
             "appId": TELEBIRR_MERCHANT_APP_ID,
@@ -92,7 +90,12 @@ def initiate_payment():
 
         # Send payment request
         headers = {"Content-Type": "application/json"}
-        response = requests.post("https://openapi.ethiotelecom.et/paymentService/open-payment", json=payload, headers=headers)
+        response = requests.post(
+            "https://196.188.120.83:34443/apiaccess/payment/gateway",
+            json=payload,
+            headers=headers,
+            verify=False  # Bypass SSL verification
+        )
         response_data = response.json()
 
         if response_data.get("code") == "200":
