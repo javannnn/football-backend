@@ -51,10 +51,8 @@ private_key = serialization.load_pem_private_key(
     password=None,
 )
 
-# Applicants list route
 @app.route('/applicants', methods=['GET'])
 def get_applicants():
-    # Example static data, replace with DB query if needed
     applicants = [
         {"id": 1, "name": "John Doe", "spots": 2, "status": "Pending"},
         {"id": 2, "name": "Jane Smith", "spots": 1, "status": "Paid"}
@@ -72,21 +70,15 @@ def initiate_payment():
         return jsonify({"error": "Name and phone number are required"}), 400
 
     try:
-        # Prepare payment payload
         payload = {
             "outTradeNo": f"booking-{int(time.time())}",
-            "subject": "Yerer Football Booking",
+            "subject": "Football Booking",
             "totalAmount": amount,
-            "notifyUrl": "https://your-backend-url/telebirr-callback",
+            "notifyUrl": "https://football-backend-47ii.onrender.com/telebirr-notify",
             "shortCode": TELEBIRR_SHORT_CODE,
-            "timeoutExpress": "30m",
-            "appId": TELEBIRR_MERCHANT_APP_ID,
-            "receiveName": user_name,
-            "returnUrl": "https://your-frontend-url/booking-success",
-            "callbackUrl": "https://your-backend-url/telebirr-callback"
+            "appId": TELEBIRR_MERCHANT_APP_ID
         }
 
-        # Generate signature
         serialized_payload = json.dumps(payload, separators=(',', ':'))
         hashed_payload = hashlib.sha256(serialized_payload.encode()).digest()
         signature = private_key.sign(
@@ -94,34 +86,32 @@ def initiate_payment():
             padding.PKCS1v15(),
             SHA256()
         )
-        signed_signature = base64.b64encode(signature).decode()
+        payload["sign"] = base64.b64encode(signature).decode()
 
-        # Add signature to payload
-        payload["sign"] = signed_signature
+        headers = {
+            "Content-Type": "application/json",
+            "X-APP-Key": TELEBIRR_FABRIC_APP_ID
+        }
 
-        # Send payment request
-        headers = {"Content-Type": "application/json"}
         response = requests.post(
-            "https://196.188.120.83:34443/apiaccess/payment/gateway",
+            "https://196.188.120.3:38443/payment/v1/token",
             json=payload,
             headers=headers,
-            verify=False  # Bypass SSL verification
+            verify=False
         )
-        response_data = response.json()
 
-        if response_data.get("code") == "200":
-            return jsonify({"message": "Payment initiated successfully", "data": response_data})
-        else:
-            return jsonify({"error": response_data.get("message", "Payment initiation failed")}), 400
+        return response.json()
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/telebirr-callback', methods=['POST'])
-def handle_payment_callback():
-    # Process callback data from Telebirr to confirm payment status
-    callback_data = request.json
-    # Validate and process the callback (e.g., mark booking as paid)
-    return jsonify({"message": "Callback received", "data": callback_data})
+@app.route('/telebirr-notify', methods=['POST'])
+def telebirr_notify():
+    try:
+        callback_data = request.json
+        print("Callback received:", callback_data)
+        return jsonify({"status": "success", "message": "Notification received"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
