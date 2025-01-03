@@ -1,122 +1,70 @@
 import os
-import json
-import base64
-import time
-import hashlib
-import requests
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.hashes import SHA256
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Telebirr credentials
-TELEBIRR_MERCHANT_APP_ID = "1346688522803207"
-TELEBIRR_FABRIC_APP_ID = "c4182ef8-9249-458a-985e-06d191f4d505"
-TELEBIRR_SHORT_CODE = "484457"
-TELEBIRR_APP_SECRET = "fad0f06383c6297f545876694b974599"
+# Static values for QR code and payment
+QR_CODE_URL = "https://football-backend-47ii.onrender.com/static/chat_qr_code.jpg"
+PHONE_NUMBER = "+251910187397"
+AMOUNT_PER_SLOT = 800
 
-# Private key directly embedded here
-PRIVATE_KEY = """-----BEGIN PRIVATE KEY-----
-MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC/ZcoOng1sJZ4CegopQVCw3HYqq
-VRLEudgT+dDpS8fRVy7zBgqZunju2VRCQuHeWs7yWgc9QGd4/8kRSLY+jlvKNeZ60yWcqEY+eKyQM
-mcjOz2Sn41fcVNgF+HV3DGiV4b23B6BCMjnpEFIb9d99/TsjsFSc7gCPgfl2yWDxE/Y1B2tVE6op2
-qd63YsMVFQGdre/CQYvFJENpQaBLMq4hHyBDgluUXlF0uA1X7UM0ZjbFC6ZIB/Hn1+pl5Ua8dKYrk
-VaecolmJT/s7c/+/1JeN+ja8luBoONsoODt2mTeVJHLF9Y3oh5rI+IY8HukIZJ1U6O7/JcjH3aRJT
-ZagXUS9AgMBAAECggEBALBIBx8JcWFfEDZFwuAWeUQ7+VX3mVx/770kOuNx24HYt718D/HV0avfKE
-THqOfA7AQnz42EF1Yd7Rux1ZO0e3unSVRJhMO4linT1XjJ9ScMISAColWQHk3wY4va/FLPqG7N4L1
-w3BBtdjIc0A2zRGLNcFDBlxl/CVDHfcqD3CXdLukm/friX6TvnrbTyfAFicYgu0+UtDvfxTL3pRL3
-u3WTkDvnFK5YXhoazLctNOFrNiiIpCW6dJ7WRYRXuXhz7C0rENHyBtJ0zura1WD5oDbRZ8ON4v1KV
-4QofWiTFXJpbDgZdEeJJmFmt5HIi+Ny3P5n31WwZpRMHGeHrV23//0CgYEA+2/gYjYWOW3JgMDLX7
-r8fGPTo1ljkOUHuH98H/a/lE3wnnKKx+2ngRNZX4RfvNG4LLeWTz9plxR2RAqqOTbX8fj/NA/sS4m
-ru9zvzMY1925FcX3WsWKBgKlLryl0vPScq4ejMLSCmypGz4VgLMYZqT4NYIkU2Lo1G1MiDoLy0CcC
-gYEAwt77exynUhM7AlyjhAA2wSINXLKsdFFF1u976x9kVhOfmbAutfMJPEQWb2WXaOJQMvMpgg2rU
-5aVsyEcuHsRH/2zatrxrGqLqgxaiqPz4ELINIh1iYK/hdRpr1vATHoebOv1wt8/9qxITNKtQTgQbq
-Yci3KV1lPsOrBAB5S57nsCgYAvw+cagS/jpQmcngOEoh8I+mXgKEET64517DIGWHe4kr3dO+FFbc5
-eZPCbhqgxVJ3qUM4LK/7BJq/46RXBXLvVSfohR80Z5INtYuFjQ1xJLveeQcuhUxdK+95W3kdBBi8l
-HtVPkVsmYvekwK+ukcuaLSGZbzE4otcn47kajKHYDQKBgDbQyIbJ+ZsRw8CXVHu2H7DWJlIUBIS3s
-+CQ/xeVfgDkhjmSIKGX2to0AOeW+S9MseiTE/L8a1wY+MUppE2UeK26DLUbH24zjlPoI7PqCJjl0D
-FOzVlACSXZKV1lfsNEeriC61/EstZtgezyOkAlSCIH4fGr6tAeTU349Bnt0RtvAoGBAObgxjeH6JG
-pdLz1BbMj8xUHuYQkbxNeIPhH29CySn0vfhwg9VxAtIoOhvZeCfnsCRTj9OZjepCeUqDiDSoFzngl
-rKhfeKUndHjvg+9kiae92iI6qJudPCHMNwP8wMSphkxUqnXFR3lr9A765GA980818UWZdrhrjLKtI
-IZdh+X1
------END PRIVATE KEY-----"""
-
-# Load private key
-private_key = serialization.load_pem_private_key(
-    PRIVATE_KEY.encode(),
-    password=None,
-)
+# Applicants data
+applicants = []
 
 @app.route('/')
 def home():
     return "Football backend is running!"
 
-
 @app.route('/applicants', methods=['GET'])
 def get_applicants():
-    applicants = [
-        {"id": 1, "name": "John Doe", "spots": 2, "status": "Pending"},
-        {"id": 2, "name": "Jane Smith", "spots": 1, "status": "Paid"}
-    ]
+    """Get the list of applicants."""
     return jsonify(applicants)
 
 @app.route('/book', methods=['POST'])
-def initiate_payment():
+def book_slot():
+    """Book a slot and calculate the payment."""
     data = request.json
     user_name = data.get("name")
-    user_phone = data.get("phone")
-    amount = 800  # Fixed amount for booking
+    slots = data.get("slots")
 
-    if not user_name or not user_phone:
-        return jsonify({"error": "Name and phone number are required"}), 400
+    # Validate input
+    if not user_name or not slots or not isinstance(slots, int) or slots <= 0:
+        return jsonify({"error": "Name and a valid number of slots are required"}), 400
 
-    try:
-        payload = {
-            "outTradeNo": f"booking-{int(time.time())}",
-            "subject": "Football Booking",
-            "totalAmount": amount,
-            "notifyUrl": "https://football-backend-47ii.onrender.com/telebirr-notify",
-            "shortCode": TELEBIRR_SHORT_CODE,
-            "appId": TELEBIRR_MERCHANT_APP_ID
+    # Calculate total amount
+    total_amount = AMOUNT_PER_SLOT * slots
+
+    # Save applicant data
+    applicant = {"name": user_name, "slots": slots, "status": "Pending"}
+    applicants.append(applicant)
+
+    return jsonify({
+        "message": "Please make your payment to complete the booking.",
+        "payment_details": {
+            "qr_code": QR_CODE_URL,
+            "phone_number": PHONE_NUMBER,
+            "amount": total_amount
         }
+    })
 
-        serialized_payload = json.dumps(payload, separators=(',', ':'))
-        hashed_payload = hashlib.sha256(serialized_payload.encode()).digest()
-        signature = private_key.sign(
-            hashed_payload,
-            padding.PKCS1v15(),
-            SHA256()
-        )
-        payload["sign"] = base64.b64encode(signature).decode()
+@app.route('/update-status', methods=['POST'])
+def update_status():
+    """Update the status of an applicant."""
+    data = request.json
+    user_name = data.get("name")
+    new_status = data.get("status")
 
-        headers = {
-            "Content-Type": "application/json",
-            "X-APP-Key": TELEBIRR_FABRIC_APP_ID
-        }
+    if not user_name or not new_status:
+        return jsonify({"error": "Name and status are required"}), 400
 
-        response = requests.post(
-            "https://196.188.120.3:38443/payment/v1/token",
-            json=payload,
-            headers=headers,
-            verify=False
-        )
+    for applicant in applicants:
+        if applicant["name"] == user_name:
+            applicant["status"] = new_status
+            return jsonify({"message": "Status updated successfully"}), 200
 
-        return response.json()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/telebirr-notify', methods=['POST'])
-def telebirr_notify():
-    try:
-        callback_data = request.json
-        print("Callback received:", callback_data)
-        return jsonify({"status": "success", "message": "Notification received"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"error": "Applicant not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
