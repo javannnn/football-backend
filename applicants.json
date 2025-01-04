@@ -1,1 +1,18 @@
-[]
+[
+    {"id": 1, "name": "Yafet Surafel", "slots": 1, "status": "Pending"},
+    {"id": 2, "name": "Azarias Berhan", "slots": 1, "status": "Pending"},
+    {"id": 3, "name": "Minilik", "slots": 1, "status": "Pending"},
+    {"id": 4, "name": "Samuel Adamu", "slots": 1, "status": "Pending"},
+    {"id": 5, "name": "Bernabas Dinberu", "slots": 1, "status": "Pending"},
+    {"id": 6, "name": "Abraham Teklay", "slots": 1, "status": "Pending"},
+    {"id": 7, "name": "Zelalem Gashaw", "slots": 1, "status": "Pending"},
+    {"id": 8, "name": "Samuel Tesfaye", "slots": 2, "status": "Pending"},
+    {"id": 9, "name": "Degneh Dinberu", "slots": 1, "status": "Pending"},
+    {"id": 10, "name": "Eyuel Girma", "slots": 1, "status": "Pending"},
+    {"id": 11, "name": "Eyuel Teferi", "slots": 1, "status": "Pending"},
+    {"id": 12, "name": "Solomon Girma", "slots": 1, "status": "Pending"},
+    {"id": 13, "name": "Natty Bekele", "slots": 1, "status": "Pending"},
+    {"id": 14, "name": "Micky Bekele", "slots": 1, "status": "Pending"},
+    {"id": 15, "name": "Samuel bmp", "slots": 1, "status": "Pending"},
+    {"id": 16, "name": "Eyosias Belay", "slots": 1, "status": "Pending"}
+]
