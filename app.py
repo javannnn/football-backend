@@ -35,10 +35,9 @@ HARDCODED_APPLICANTS = [
     {"id": 16, "name": "Eyosias Belay", "slots": 1, "status": "Paid"},
     {"id": 17, "name": "Mitiku", "slots": 1, "status": "Paid"},
     {"id": 18, "name": "Zekarias Girma", "slots": 1, "status": "Paid"},
-    {"id": 19, "name": "Elnatan Tesfaw", "slots":1, "status":"Paid"},
+    {"id": 19, "name": "Elnatan Tesfaw", "slots": 1, "status": "Paid"},
 ]
 
-# Load applicants data
 def load_applicants():
     try:
         with open(DATA_FILE, "r") as file:
@@ -47,12 +46,10 @@ def load_applicants():
         save_applicants(HARDCODED_APPLICANTS)
         return HARDCODED_APPLICANTS
 
-# Save applicants data
 def save_applicants(data):
     with open(DATA_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# Load final teams
 def load_final_teams():
     try:
         with open(FINAL_TEAMS_FILE, "r") as file:
@@ -60,12 +57,10 @@ def load_final_teams():
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
-# Save final teams
 def save_final_teams(data):
     with open(FINAL_TEAMS_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# Initialize applicants on startup
 applicants = load_applicants()
 
 @app.route('/')
@@ -149,7 +144,7 @@ def get_teams():
 
 @app.route('/save-teams', methods=['POST'])
 def save_teams():
-    data = request.json  # this should be the newTeams array
+    data = request.json  # This should be the newTeams array
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid teams data"}), 400
     save_final_teams(data)
