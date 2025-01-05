@@ -6,15 +6,16 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# File to store applicants data
+# Files to store applicants data and final teams
 DATA_FILE = "applicants.json"
+FINAL_TEAMS_FILE = "final_teams.json"
 
 # Static values for QR code and payment
 QR_CODE_URL = "https://football-backend-47ii.onrender.com/static/chat_qr_code.jpg"
 PHONE_NUMBER = "+251910187397"
 AMOUNT_PER_SLOT = 800
 
-# Hardcoded applicants
+# Hardcoded applicants (used if applicants.json is missing or invalid)
 HARDCODED_APPLICANTS = [
     {"id": 1, "name": "Yafet Surafel", "slots": 1, "status": "Pending"},
     {"id": 2, "name": "Azarias Berhan", "slots": 1, "status": "Pending"},
@@ -34,7 +35,7 @@ HARDCODED_APPLICANTS = [
     {"id": 16, "name": "Eyosias Belay", "slots": 1, "status": "Pending"},
 ]
 
-# Load applicants data from JSON file or initialize with hardcoded data
+# Load applicants data
 def load_applicants():
     try:
         with open(DATA_FILE, "r") as file:
@@ -43,12 +44,25 @@ def load_applicants():
         save_applicants(HARDCODED_APPLICANTS)
         return HARDCODED_APPLICANTS
 
-# Save applicants data to JSON file
+# Save applicants data
 def save_applicants(data):
     with open(DATA_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# Load applicants at startup
+# Load final teams
+def load_final_teams():
+    try:
+        with open(FINAL_TEAMS_FILE, "r") as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+# Save final teams
+def save_final_teams(data):
+    with open(FINAL_TEAMS_FILE, "w") as file:
+        json.dump(data, file, indent=4)
+
+# Initialize applicants on startup
 applicants = load_applicants()
 
 @app.route('/')
@@ -76,7 +90,7 @@ def book_slot():
         "status": "Pending"
     }
     applicants.append(applicant)
-    save_applicants(applicants)  # Save to JSON file
+    save_applicants(applicants)
 
     return jsonify({
         "message": "Please make your payment to complete the booking.",
@@ -102,11 +116,11 @@ def update_applicant():
         if applicant["id"] == applicant_id:
             if updated_name:
                 applicant["name"] = updated_name
-            if updated_slots:
+            if updated_slots is not None:
                 applicant["slots"] = updated_slots
             if updated_status:
                 applicant["status"] = updated_status
-            save_applicants(applicants)  # Save updates to JSON file
+            save_applicants(applicants)
             return jsonify({"message": "Applicant updated successfully"}), 200
 
     return jsonify({"error": "Applicant not found"}), 404
@@ -120,9 +134,23 @@ def delete_applicant():
         return jsonify({"error": "Applicant ID is required"}), 400
 
     global applicants
-    applicants = [applicant for applicant in applicants if applicant["id"] != applicant_id]
-    save_applicants(applicants)  # Save changes to JSON file
+    applicants = [app for app in applicants if app["id"] != applicant_id]
+    save_applicants(applicants)
     return jsonify({"message": "Applicant deleted successfully"}), 200
+
+# New endpoints to handle final teams
+@app.route('/get-teams', methods=['GET'])
+def get_teams():
+    final_teams = load_final_teams()
+    return jsonify(final_teams)
+
+@app.route('/save-teams', methods=['POST'])
+def save_teams():
+    data = request.json  # this should be the newTeams array
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid teams data"}), 400
+    save_final_teams(data)
+    return jsonify({"message": "Teams saved successfully!"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
