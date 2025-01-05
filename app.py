@@ -24,7 +24,7 @@ HARDCODED_APPLICANTS = [
     {"id": 5, "name": "Bernabas Dinberu", "slots": 1, "status": "Paid"},
     {"id": 6, "name": "Abraham Teklay", "slots": 1, "status": "Paid"},
     {"id": 7, "name": "Zelalem Gashaw", "slots": 1, "status": "Paid"},
-    {"id": 8, "name": "Samuel Tesfaye", "slots": 2, "status": "Paid"},
+    {"id": 8, "name": "Samuel Tesfaye", "slots": 1, "status": "Paid"},
     {"id": 9, "name": "Degneh Dinberu", "slots": 1, "status": "Paid"},
     {"id": 10, "name": "Eyuel Girma", "slots": 1, "status": "Paid"},
     {"id": 11, "name": "Eyuel Teferi", "slots": 1, "status": "Paid"},
