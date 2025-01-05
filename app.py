@@ -6,16 +6,13 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Files to store applicants data and final teams
 DATA_FILE = "applicants.json"
 FINAL_TEAMS_FILE = "final_teams.json"
 
-# Static values for QR code and payment
 QR_CODE_URL = "https://football-backend-47ii.onrender.com/static/chat_qr_code.jpg"
 PHONE_NUMBER = "+251910187397"
 AMOUNT_PER_SLOT = 800
 
-# Hardcoded applicants (used if applicants.json is missing or invalid)
 HARDCODED_APPLICANTS = [
     {"id": 1, "name": "Yafet Surafel", "slots": 1, "status": "Paid"},
     {"id": 2, "name": "Azarias Berhan", "slots": 1, "status": "Paid"},
@@ -39,26 +36,26 @@ HARDCODED_APPLICANTS = [
 
 def load_applicants():
     try:
-        with open(DATA_FILE, "r") as file:
-            return json.load(file)
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         save_applicants(HARDCODED_APPLICANTS)
         return HARDCODED_APPLICANTS
 
 def save_applicants(data):
-    with open(DATA_FILE, "w") as file:
-        json.dump(data, file, indent=4)
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 def load_final_teams():
     try:
-        with open(FINAL_TEAMS_FILE, "r") as file:
-            return json.load(file)
+        with open(FINAL_TEAMS_FILE, "r") as f:
+            return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
 def save_final_teams(data):
-    with open(FINAL_TEAMS_FILE, "w") as file:
-        json.dump(data, file, indent=4)
+    with open(FINAL_TEAMS_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 applicants = load_applicants()
 
@@ -135,15 +132,15 @@ def delete_applicant():
     save_applicants(applicants)
     return jsonify({"message": "Applicant deleted successfully"}), 200
 
-# New endpoints to handle final teams
+# Returns the final teams from final_teams.json
 @app.route('/get-teams', methods=['GET'])
 def get_teams():
-    final_teams = load_final_teams()
-    return jsonify(final_teams)
+    return jsonify(load_final_teams())
 
+# Manually save teams to final_teams.json
 @app.route('/save-teams', methods=['POST'])
 def save_teams():
-    data = request.json  # This should be the array of teams (plus leftover if needed)
+    data = request.json
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid teams data"}), 400
     save_final_teams(data)
