@@ -35,7 +35,7 @@ HARDCODED_APPLICANTS = [
     {"id": 16, "name": "Eyosias Belay", "slots": 1, "status": "Paid"},
     {"id": 17, "name": "Mitiku", "slots": 1, "status": "Paid"},
     {"id": 18, "name": "Zekarias Girma", "slots": 1, "status": "Paid"},
-    {"id": 19, "name": "Elnatan Tesfaw", "slots": 1, "status": "Paid"},
+    {"id": 19, "name": "Elnatan Tesfaw", "slots": 1, "status":"Paid"},
 ]
 
 def load_applicants():
@@ -144,7 +144,7 @@ def get_teams():
 
 @app.route('/save-teams', methods=['POST'])
 def save_teams():
-    data = request.json  # This should be the newTeams array
+    data = request.json  # This should be the array of teams (plus leftover if needed)
     if not data or not isinstance(data, list):
         return jsonify({"error": "Invalid teams data"}), 400
     save_final_teams(data)
