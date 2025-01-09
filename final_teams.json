@@ -1,27 +1,26 @@
 [
-    [
-      { "id": 14, "name": "Micky Bekele" },
-      { "id": 3,  "name": "Minilik" },
-      { "id": 16, "name": "Eyosias Belay" },
-      { "id": 1,  "name": "Yafet Surafel" },
-      { "id": 7,  "name": "Zelalem Gashaw" },
-      { "id": 12, "name": "Solomon Girma" }
-    ],
-    [
-      { "id": 9,  "name": "Degneh Dinberu" },
-      { "id": 8,  "name": "Samuel Tesfaye" },
-      { "id": 13, "name": "Natty Bekele" },
-      { "id": 5,  "name": "Bernabas Dinberu" },
-      { "id": 2,  "name": "Azarias Berhan" },
-      { "id": 10, "name": "Eyuel Girma" }
-    ],
-    [
-      { "id": 17, "name": "Mitiku" },
-      { "id": 4,  "name": "Samuel Adamu" },
-      { "id": 11, "name": "Eyuel Teferi" },
-      { "id": 6,  "name": "Abraham Teklay" },
-      { "id": 18, "name": "Elnatan Tesfaw" },
-      { "id": 15, "name": "Samuel bmp" }
-    ]
+  [
+    { "id": 8,  "name": "Samuel Tesfaye" },
+    { "id": 5,  "name": "Bernabas Dinberu" },
+    { "id": 10, "name": "Eyuel Girma" },
+    { "id": 14, "name": "Micky Bekele" },
+    { "id": 3,  "name": "Minilik" },
+    { "id": 11, "name": "Eyuel Teferi" }
+  ],
+  [
+    { "id": 1,  "name": "Yafet Surafel" },
+    { "id": 2,  "name": "Azarias Berhan" },
+    { "id": 16, "name": "Eyosias Belay" },
+    { "id": 9,  "name": "Degneh Dinberu" },
+    { "id": 18, "name": "Elnatan Tesfaw" },
+    { "id": 6,  "name": "Abraham Teklay" }
+  ],
+  [
+    { "id": 12, "name": "Solomon Girma" },
+    { "id": 7,  "name": "Zelalem Gashaw" },
+    { "id": 15, "name": "Samuel bmp" },
+    { "id": 4,  "name": "Samuel Adamu" },
+    { "id": 17, "name": "Mitiku" },
+    { "id": 13, "name": "Natty Bekele" }
   ]
-  
+]
